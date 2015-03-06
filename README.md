@@ -9,6 +9,7 @@ The Goolge Analytics wrapper is a convenient tool to extract data from GA via AP
     
 ### Usage
     
+    ```python
     from analytics_query import analytics_query as aq
     
     df = aq.get_api_query(start_date='7 days ago',
@@ -17,4 +18,5 @@ The Goolge Analytics wrapper is a convenient tool to extract data from GA via AP
                      dimensions='ga:sessions')
     
     df.head()
+    ```
     
