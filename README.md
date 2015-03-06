@@ -10,7 +10,33 @@ $ python setup.py install
 ```
     
 ### Usage
-    
+
+##### Authorize
+
+Please go to https://console.developers.google.com to start an API project. Make sure you have enabled analytics API. 
+
+Create a new OAuth client ID and download it to your working directory. 
+
+Authorize your access to the API.
+ 
+```python
+from analytics_query import analytics_query as aq
+
+aq.authorize()
+```
+
+Then authorize the app with your Google account that can access your GA account. 
+
+Copy the code on the url and paste to the console, then enter. 
+
+The console will then store your refresh token and access token in the file called "analytics.dat" in the working directory. 
+
+Then you can make the API call.
+ 
+##### Query GA
+
+The get_api_query method will take the parameters to fetch data from GA API and return as a pandas DataFrame. 
+
 ```python
 from analytics_query import analytics_query as aq
 

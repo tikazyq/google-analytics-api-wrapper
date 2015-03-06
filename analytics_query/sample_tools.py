@@ -33,7 +33,7 @@ from oauth2client import file
 from oauth2client import tools
 
 
-def init(argv, name, version, doc, filename, scope=None, parents=[], discovery_filename=None):
+def init(argv, name, version, doc, dirname, scope=None, parents=[], discovery_filename=None):
     """A common initialization routine for samples.
 
     Many of the sample applications do the same initialization, which has now
@@ -73,7 +73,7 @@ def init(argv, name, version, doc, filename, scope=None, parents=[], discovery_f
     # application, including client_id and client_secret, which are found
     # on the API Access tab on the Google APIs
     # Console <http://code.google.com/apis/console>.
-    client_secrets = os.path.join(os.path.dirname(filename),
+    client_secrets = os.path.join(dirname,
                                   'client_secrets.json')
 
     # Set up a Flow object to be used if we need to authenticate.
@@ -85,7 +85,7 @@ def init(argv, name, version, doc, filename, scope=None, parents=[], discovery_f
     # If the credentials don't exist or are invalid run through the native client
     # flow. The Storage object will ensure that if successful the good
     # credentials will get written back to a file.
-    storage = file.Storage(os.path.abspath(os.path.join(os.path.dirname(filename), name + '.dat')))
+    storage = file.Storage(os.path.abspath(os.path.join(dirname, name + '.dat')))
     credentials = storage.get()
     if credentials is None or credentials.invalid:
         credentials = tools.run_flow(flow, storage, flags)

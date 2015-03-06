@@ -3,11 +3,10 @@
 import os
 import argparse
 from time import sleep
-from pandas import DataFrame, merge, read_csv
+from pandas import DataFrame, merge, read_csv, to_datetime
 import sample_tools
 
-basedir = os.path.abspath(os.path.dirname(os.curdir))
-print 'basedir: ', basedir
+basedir = os.path.abspath(os.curdir)
 
 # set sleep duration after every api request
 SLEEP_DURATION = 0.1
@@ -118,6 +117,10 @@ def _cleanup():
         os.remove(PROFILES_PATH)
 
 
+def authorize():
+    get_service()
+
+
 def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dimensions='', sort=None, filters=None,
                   output=None, webproperty_id=None, profile_id=None, **kwargs):
     """
@@ -147,6 +150,9 @@ def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dime
     # cleanup
     if kwargs.get('cleanup') or kwargs.get('refresh'):
         _cleanup()
+
+    # debug
+    debug = kwargs.get('debug')
 
     df = []
     headers = []
@@ -226,10 +232,11 @@ def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dime
                 counter += len(rows)
 
                 # printing
-                print 'processing profile %s (%s / %s results fetched, sample ratio: %.2f%%)' % (profileId,
-                                                                                                 counter,
-                                                                                                 total_results,
-                                                                                                 sample_ratio * 100)
+                if debug:
+                    print 'processing profile %s (%s / %s results fetched, sample ratio: %.2f%%)' % (profileId,
+                                                                                                     counter,
+                                                                                                     total_results,
+                                                                                                     sample_ratio * 100)
 
             except Exception, err:
                 print(err)
@@ -240,6 +247,10 @@ def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dime
         return DataFrame([])
     else:
         df = DataFrame(df, columns=headers + ['profileId'])
+
+    # convert ga:date to datetime dtype
+    if 'ga:date' in headers:
+        df['ga:date'] = to_datetime(df['ga:date'])
 
     # add profileId
     df['profileId'] = df.profileId.astype('int')
@@ -279,6 +290,7 @@ def main():
                                                    'profiles under specified webproperties.')
     parser.add_argument('-c', '--cleanup', help='If set true, temp files profiles.csv and webproperties.csv will be '
                                                 'removed.')
+    parser.add_argument('-D', '--debug', help='If set true, will echo debug info to stdout.')
 
     args = parser.parse_args()
 
@@ -292,6 +304,7 @@ def main():
     webproperty_id = None
     profile_id = None
     cleanup = False
+    debug = False
 
     try:
 
@@ -315,6 +328,8 @@ def main():
             profile_id = args['profile_id']
         if args['cleanup'] is not None:
             cleanup = bool(cleanup)
+        if args['debug'] is not None:
+            debug = bool(debug)
 
     except Exception:
         parser.print_help()
@@ -328,7 +343,8 @@ def main():
                   output=output,
                   webproperty_id=webproperty_id,
                   profile_id=profile_id,
-                  cleanup=cleanup)
+                  cleanup=cleanup,
+                  debug=debug)
 
 
 if __name__ == '__main__':
