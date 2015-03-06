@@ -5,6 +5,7 @@ The Goolge Analytics wrapper is a convenient tool to extract data from GA via AP
 ### Installation
 
 `$ pip install google-api-python-client pandas`
+
 `$ python setup.py install`
     
 ### Usage
