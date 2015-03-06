@@ -6,7 +6,8 @@ from time import sleep
 from pandas import DataFrame, merge, read_csv
 import sample_tools
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+basedir = os.path.abspath(os.path.dirname(os.curdir))
+print 'basedir: ', basedir
 
 # set sleep duration after every api request
 SLEEP_DURATION = 0.1
@@ -21,7 +22,7 @@ def get_service():
         global service
         # Authenticate and construct service.
         service, flags = sample_tools.init(
-            '', 'analytics', 'v3', __doc__, __file__,
+            '', 'analytics', 'v3', __doc__, basedir,
             scope='https://www.googleapis.com/auth/analytics.readonly')
     return service
 
