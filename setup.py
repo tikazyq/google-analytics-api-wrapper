@@ -2,10 +2,10 @@ from distutils.core import setup
 
 setup(
     name='google-analytics-api-wrapper',
-    version='0.1.2.1',
+    version='0.1.3',
     packages=['analytics_query'],
     url='https://github.com/tikazyq/google-analytics-api-wrapper',
-    download_url='https://github.com/tikazyq/google-analytics-api-wrapper/0.1.1',
+    download_url='https://github.com/tikazyq/google-analytics-api-wrapper/tarball/master',
     license='http://opensource.org/licenses/MIT',
     author='Yeqing Zhang',
     author_email='tikazyq@gmail.com',

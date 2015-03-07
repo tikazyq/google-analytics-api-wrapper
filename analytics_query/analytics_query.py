@@ -60,7 +60,7 @@ def get_webproperties():
     return df
 
 
-def cache_profiles():
+def store_profiles():
     get_service()
 
     webproperties = get_webproperties()
@@ -92,11 +92,11 @@ def cache_profiles():
 def get_profiles(webproperty_id=None):
     if webproperty_id is None:
         if not os.path.exists(PROFILES_PATH):
-            cache_profiles()
+            store_profiles()
         return read_csv(PROFILES_PATH)
     else:
         if not os.path.exists(PROFILES_PATH):
-            cache_profiles()
+            store_profiles()
         df = read_csv(PROFILES_PATH)
 
         if isinstance(webproperty_id, list):
@@ -106,6 +106,14 @@ def get_profiles(webproperty_id=None):
         else:
             raise TypeError('webproperty_id should only be list or str')
         return df[df.webpropertyId.isin(wids)]
+
+
+def unify(d):
+    if isinstance(d, str):
+        _d = [d]
+    else:
+        _d = d
+    return ','.join('ga:' + x if str(x)[:3] != 'ga:' else x for x in _d)
 
 
 def _cleanup():
@@ -153,6 +161,10 @@ def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dime
 
     # debug
     debug = kwargs.get('debug')
+
+    # unify metrics and dimensions to the form accepted by GA
+    metrics = unify(metrics)
+    dimensions = unify(dimensions)
 
     df = []
     headers = []
@@ -250,7 +262,11 @@ def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dime
 
     # convert ga:date to datetime dtype
     if 'ga:date' in headers:
-        df['ga:date'] = to_datetime(df['ga:date'])
+        df['ga:date'] = to_datetime(df['ga:date'], format='%Y%m%d')
+
+    # convert ga:dateHour to datetime dtype
+    if 'ga:dateHour' in headers:
+        df['ga:dateHour'] = to_datetime(df['ga:dateHour'], format='%Y%m%d%H')
 
     # add profileId
     df['profileId'] = df.profileId.astype('int')

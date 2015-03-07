@@ -1,4 +1,5 @@
 *.pyc
 *.json
+*.csv
 analytics.dat
 dist
