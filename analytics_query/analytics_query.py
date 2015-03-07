@@ -125,12 +125,31 @@ def _cleanup():
         os.remove(PROFILES_PATH)
 
 
+def _get_first_profile_ids(webproperty_id=None):
+    """A web property can have multiple profiles, in order to get only one genuine profile (oldest) when requesting
+    all data of the accounts, it is better to get the profile that was first created.
+    This function will return the oldest profile"""
+    if isinstance(webproperty_id, str):
+        wids = [webproperty_id]
+    elif webproperty_id is None:
+        wids = get_webproperties().webpropertyId.tolist()
+    else:
+        wids = webproperty_id
+
+    pids = []
+
+    for wid in wids:
+        pids.append(get_profiles(wid).sort('created').profileId.tolist()[0])
+
+    return pids
+
+
 def authorize():
     get_service()
 
 
-def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dimensions='', sort=None, filters=None,
-                  output=None, webproperty_id=None, profile_id=None, **kwargs):
+def _get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dimensions='', sort=None, filters=None,
+                   output=None, webproperty_id=None, profile_id=None, oldest_prf=False, **kwargs):
     """
     Execute GA API queries given selected parameters.
     Parameters of start_date, end_date, metrics, dimensions, sort, filters are the parameters to be passed to
@@ -146,6 +165,7 @@ def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dime
     :param output: If set, the output DataFrame will be output as a CSV to a path where the output specifies.
     :param webproperty_id: webproperty_id(s) to be fetched. If not set, will output all available profiles for all webproperties.
     :param profile_id: profile_id(s) to be fetched. If not set, will output all available profiles under specified webproperties.
+    :param oldest_prf: If set True, will return the oldest profile data for each webproperty
     :param kwargs: Other parameters including cleanup.
     :return: DataFrame
     """
@@ -191,8 +211,12 @@ def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dime
                 raise TypeError('profile_id can only be str or list')
         else:
             pids = get_profiles(webproperty_id).profileId.astype(str).tolist()
+
     df_profile = get_profiles(webproperty_id).ix[:,
                  ['accountId', 'webpropertyId', 'profileId', 'profileName', 'websiteUrl']]
+
+    if oldest_prf:
+        pids = _get_first_profile_ids(webproperty_id)
 
     # iterate through each profile_id
     for profileId in pids:
@@ -261,12 +285,12 @@ def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dime
         df = DataFrame(df, columns=headers + ['profileId'])
 
     # convert ga:date to datetime dtype
-    if 'ga:date' in headers:
-        df['ga:date'] = to_datetime(df['ga:date'], format='%Y%m%d')
+    if 'date' in headers:
+        df['date'] = to_datetime(df['date'], format='%Y%m%d')
 
     # convert ga:dateHour to datetime dtype
-    if 'ga:dateHour' in headers:
-        df['ga:dateHour'] = to_datetime(df['ga:dateHour'], format='%Y%m%d%H')
+    if 'dateHour' in headers:
+        df['dateHour'] = to_datetime(df['dateHour'], format='%Y%m%d%H')
 
     # add profileId
     df['profileId'] = df.profileId.astype('int')
@@ -279,6 +303,23 @@ def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dime
         df.to_csv(output, index=False, encoding='utf-8')
 
     return df
+
+
+def get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dimensions='', sort=None,
+                  filters=None, output=None, webproperty_id=None, profile_id=None, **kwargs):
+    return _get_api_query(start_date=start_date, end_date=end_date, metrics=metrics, dimensions=dimensions, sort=sort,
+                          filters=filters, output=output, webproperty_id=webproperty_id, profile_id=profile_id,
+                          **kwargs)
+
+
+class AnalyticsQuery(object):
+    def __init__(self):
+        self.df = DataFrame([])
+
+    def get_api_query(self, **kwargs):
+        self.df = _get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dimensions='', sort=None,
+                                 filters=None, output=None, webproperty_id=None, profile_id=None, **kwargs)
+        return self.df
 
 
 def main():

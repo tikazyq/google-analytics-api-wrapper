@@ -4,4 +4,3 @@ setup.py
 analytics_query/__init__.py
 analytics_query/analytics_query.py
 analytics_query/sample_tools.py
-analytics_query/utils.py

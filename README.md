@@ -27,11 +27,9 @@ aq.authorize()
 
 Then authorize the app with your Google account that can access your GA account. 
 
-Copy the code on the url and paste to the console, then enter. 
-
 The console will then store your refresh token and access token in the file called "analytics.dat" in the working directory. 
 
-Then you can make the API call.
+Now you can make the API call.
  
 ##### Query GA
 
