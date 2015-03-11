@@ -6,7 +6,7 @@ from time import sleep
 from pandas import DataFrame, merge, read_csv, to_datetime
 import sample_tools
 
-basedir = os.path.abspath(os.curdir)
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 # set sleep duration after every api request
 SLEEP_DURATION = 0.1
@@ -110,7 +110,10 @@ def get_profiles(webproperty_id=None):
 
 def unify(d):
     if isinstance(d, str):
-        _d = [d]
+        if len(d.split(',')) == 1:
+            _d = [d]
+        else:
+            _d = d.split(',')
     else:
         _d = d
     return ','.join('ga:' + x if str(x)[:3] != 'ga:' else x for x in _d)
@@ -264,7 +267,8 @@ def _get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dim
                 if rows:
                     for row in rows:
                         row.append(profileId)
-                        df.append(row)
+                        _row = [str(x) for x in row]
+                        df.append(_row)
                 counter += len(rows)
 
                 # printing
@@ -297,6 +301,13 @@ def _get_api_query(start_date='yesterday', end_date='yesterday', metrics='', dim
 
     # add profile info
     df = merge(left=df, right=df_profile, left_on='profileId', right_on='profileId', how='left')
+
+    # make metrics dtypes as float
+    for m in [x.replace('ga:', '') for x in metrics.split(',')]:
+        try:
+            df[m] = df[m].astype(float)
+        except Exception, err:
+            print err
 
     # output to csv if output param is set
     if output is not None:
