@@ -32,6 +32,8 @@ from oauth2client import client
 from oauth2client import file
 from oauth2client import tools
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 
 def init(argv, name, version, doc, dirname, scope=None, parents=[], discovery_filename=None):
     """A common initialization routine for samples.
@@ -85,7 +87,7 @@ def init(argv, name, version, doc, dirname, scope=None, parents=[], discovery_fi
     # If the credentials don't exist or are invalid run through the native client
     # flow. The Storage object will ensure that if successful the good
     # credentials will get written back to a file.
-    storage = file.Storage(os.path.abspath(os.path.join(dirname, name + '.dat')))
+    storage = file.Storage(os.path.abspath(os.path.join(basedir, name + '.dat')))
     credentials = storage.get()
     if credentials is None or credentials.invalid:
         credentials = tools.run_flow(flow, storage, flags)
